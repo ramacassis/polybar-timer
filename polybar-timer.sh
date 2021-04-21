@@ -14,15 +14,17 @@ timerExpiry () { cat /tmp/polybar-timer/expiry ; }
 timerLabel () { cat /tmp/polybar-timer/label ; }
 timerAction () { cat /tmp/polybar-timer/action ; }
 
-secondsLeft () { echo $(( $(timerExpiry) - $(now) )) ; }
-minutesLeft () { echo $(( ( $(secondsLeft)  + 59 ) / 60 )) ; }
+timerValue () { echo $(( $(timerExpiry) - $(now) )) ; }
 
-printExpiryTime () { dunstify -u low -r -12345 "Timer expires at $( date -d "$(secondsLeft) sec" +%H:%M)" ;}
+minutesLeft () { echo $(( $(timerValue) / 60 )) ; }
+secondsLeft () { echo $(( $(timerValue) - ($(minutesLeft) * 60) )) ; }
+
+printExpiryTime () { dunstify -u low -r -12345 "Timer expires at $( date -d "$(timerValue) sec" +%H:%M)" ;}
 
 deleteExpiryTime () { dunstify -C -12345 ; }
 
 updateTail () {
-  if timerRunning && [ $(minutesLeft) -le 0 ]
+  if timerRunning && [ $(timerValue) -le 0 ]
   then
     eval $(timerAction)
     killTimer
@@ -30,9 +32,9 @@ updateTail () {
 
   if timerRunning
   then
-    echo "$(timerLabel) $(minutesLeft)"
+    echo "祥" "$(timerLabel) | $(minutesLeft):$(secondsLeft)"
   else
-    echo "${STANDBY_LABEL}"
+    echo "祥" "${STANDBY_LABEL}"
   fi
 }
 
